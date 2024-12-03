@@ -45,6 +45,10 @@
       <groupId>dev.cel</groupId>
       <artifactId>cel</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.google.crypto.tink</groupId>
+      <artifactId>tink</artifactId>
+    </dependency>
   </dependencies>
 
 </project>
