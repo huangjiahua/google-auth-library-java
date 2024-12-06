@@ -37,6 +37,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.auth.Credentials;
 import com.google.auth.credentialaccessboundary.protobuf.ClientSideAccessBoundaryProto.ClientSideAccessBoundary;
+import com.google.auth.credentialaccessboundary.protobuf.ClientSideAccessBoundaryProto.ClientSideAccessBoundaryRule;
 import com.google.auth.http.HttpTransportFactory;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.CredentialAccessBoundary;
@@ -52,6 +53,7 @@ import com.google.crypto.tink.InsecureSecretKeyAccess;
 import com.google.crypto.tink.KeysetHandle;
 import com.google.crypto.tink.RegistryConfiguration;
 import com.google.crypto.tink.TinkProtoKeysetFormat;
+import com.google.crypto.tink.aead.AeadConfig;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import dev.cel.common.CelAbstractSyntaxTree;
 import dev.cel.common.CelOptions;
@@ -78,6 +80,12 @@ public final class ClientSideCredentialAccessBoundaryFactory {
     this.transportFactory = builder.transportFactory;
     this.sourceCredential = builder.sourceCredential;
     this.tokenExchangeEndpoint = builder.tokenExchangeEndpoint;
+
+    try {
+      AeadConfig.register();
+    } catch (GeneralSecurityException e) {
+      throw new IllegalStateException("Error occurred when registering Tink");
+    }
 
     CelOptions options = CelOptions.current().build();
     this.celCompiler = CelCompilerFactory
@@ -142,9 +150,9 @@ public final class ClientSideCredentialAccessBoundaryFactory {
     }
   }
 
-  private void refreshCredentialsIfRequired() {
+  private void refreshCredentialsIfRequired() throws IOException {
     // TODO(negarb): Implement refreshCredentialsIfRequired
-    throw new UnsupportedOperationException("refreshCredentialsIfRequired is not yet implemented.");
+    refreshCredentials();
   }
 
   public AccessToken generateToken(CredentialAccessBoundary accessBoundary) throws IOException {
@@ -181,16 +189,18 @@ public final class ClientSideCredentialAccessBoundaryFactory {
         ClientSideAccessBoundary.newBuilder();
 
     for (AccessBoundaryRule rule : rules) {
-      String availabilityCondition =
-          rule.getAvailabilityCondition().getExpression();
+      ClientSideAccessBoundaryRule.Builder ruleBuilder =
+          accessBoundaryBuilder.addAccessBoundaryRulesBuilder()
+              .addAllAvailablePermissions(rule.getAvailablePermissions())
+              .setAvailableResource(rule.getAvailableResource());
 
-      Expr availabilityConditionExpr =
-          this.compileCel(availabilityCondition);
+      if (rule.getAvailabilityCondition() != null) {
+        String availabilityCondition =
+            rule.getAvailabilityCondition().getExpression();
 
-      accessBoundaryBuilder.addAccessBoundaryRulesBuilder()
-          .addAllAvailablePermissions(rule.getAvailablePermissions())
-          .setAvailableResource(rule.getAvailableResource())
-          .setCompiledAvailabilityCondition(availabilityConditionExpr);
+        Expr availabilityConditionExpr = this.compileCel(availabilityCondition);
+        ruleBuilder.setCompiledAvailabilityCondition(availabilityConditionExpr);
+      }
     }
 
     return accessBoundaryBuilder.build().toByteArray();

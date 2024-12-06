@@ -78,9 +78,22 @@
     <deploy.autorelease>false</deploy.autorelease>
     <project.error-prone.version>2.35.1</project.error-prone.version>
     <project.protobuf.version>3.25.5</project.protobuf.version>
-    <project.cel.version>0.8.0</project.cel.version>
+    <project.cel.version>0.9.0-proto3-SNAPSHOT</project.cel.version>
     <project.tink.version>1.15.0</project.tink.version>
   </properties>
+
+  <repositories>
+    <repository>
+      <id>sonatype-snapshots</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
   <dependencyManagement>
     <dependencies>
@@ -171,10 +184,6 @@
           <exclusion>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
