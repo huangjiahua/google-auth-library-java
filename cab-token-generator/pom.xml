@@ -55,6 +55,10 @@
       <artifactId>google-auth-library-credentials</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.google.auth</groupId>
+      <artifactId>cab-token-generator-proto-dependency</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.google.http-client</groupId>
       <artifactId>google-http-client</artifactId>
     </dependency>

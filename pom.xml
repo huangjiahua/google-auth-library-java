@@ -101,6 +101,11 @@
       </dependency>
       <dependency>
         <groupId>com.google.auth</groupId>
+        <artifactId>cab-token-generator-proto-dependency</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.auth</groupId>
         <artifactId>google-auth-library-cloudshell</artifactId>
         <version>${project.version}</version>
       </dependency>
